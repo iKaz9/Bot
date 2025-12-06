@@ -222,16 +222,24 @@ def main():
     active = get_active_usdt_pairs()
 
     while True:
-        gainers = get_top_gainers(active, min_change=3.0, top_n=60)
-        if not gainers:
+        try:
+            gainers = get_top_gainers(active, min_change=3.0, top_n=30)
+
+            if not gainers:
+                time.sleep(LOOP_DELAY)
+                continue
+
+            for s in gainers:
+                analyze_symbol_combined(s)
+                time.sleep(SYMBOL_DELAY)
+
             time.sleep(LOOP_DELAY)
-            continue
 
-        for s in gainers:
-            analyze_symbol_combined(s)
-            time.sleep(SYMBOL_DELAY)
+        except Exception as e:
+            print("ERROR in main loop:", e)
+            send_alert(f"⚠️ ERROR in bot loop:\n{e}")
+            time.sleep(5)
 
-        time.sleep(LOOP_DELAY)
 
 if __name__ == "__main__":
     main()
